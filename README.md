@@ -1,10 +1,20 @@
 # Holt (Swift SDK)
 
-A thin Swift client over the [`holt`](../../README.md) binary — the
-worktree-lifecycle substrate for parallel coding agents. holt stays a
-binary; this SDK shells out to it (`Process` + `--json`, `watch --json`
-for a live NDJSON stream) rather than talking to a daemon, because there
-isn't one (SPEC.md §14.1).
+**This repo is a generated mirror — do not edit it directly.** The
+source of truth is [`sdk/swift`](https://github.com/nebelhaus/holt/tree/main/sdk/swift)
+inside [`nebelhaus/holt`](https://github.com/nebelhaus/holt), the
+worktree-lifecycle substrate for parallel coding agents (see that repo's
+`SPEC.md` §14 for the "Embedding: SDKs" design). This mirror exists only
+because Swift Package Manager has no monorepo-subdirectory story for a
+*remote* git dependency — `Package.swift` has to sit at a repo's root, so
+the SDK gets `git subtree split --prefix=sdk/swift` out to here on every
+release, tagged to match. Send changes to `nebelhaus/holt`, not here; a
+PR opened directly against this repo will get overwritten by the next
+sync.
+
+A thin Swift client over the `holt` binary. holt stays a binary; this SDK
+shells out to it (`Process` + `--json`, `watch --json` for a live NDJSON
+stream) rather than talking to a daemon, because there isn't one.
 
 macOS only, no iOS/tvOS/watchOS: `Foundation.Process` cannot spawn a
 subprocess on those platforms (App Store sandboxing forbids it outright,
@@ -17,11 +27,9 @@ field only constrains Apple OSes. Needs Swift 5.9+ (uses
 
 ## Install
 
-Not published yet — for now, reference it as a local package
-(`.package(path: "../holt/sdk/swift")`) or copy `sdk/swift` out. Swift
-Package Manager has no monorepo-subdirectory story for a *remote* git
-dependency the way `npm`/`pip` do (no `#subdirectory=` equivalent) — see
-"What's NOT here yet" below for what publishing this actually needs.
+```swift
+.package(url: "https://github.com/nebelhaus/holt-swift", from: "0.1.0")
+```
 
 `holt` itself must be on `PATH`, or pass `HoltClientOptions(bin: "/path/to/holt")`.
 
@@ -148,34 +156,22 @@ all. Compare with `==` and the `static let` constants (`lane.state ==
   TS/Python SDKs. If holt's JSON shape and this file drift, that's a real
   bug class this SDK exists to avoid — SPEC.md §14.1 says "generate SDK
   types from it" as the intended end state.
-- **Real publishing.** This lives at `sdk/swift` inside the `holt` repo,
-  same holding pattern as `sdk/ts`/`sdk/python` before they published.
-  Swift Package Manager has no equivalent of `npm`'s scoped package or
-  `pip`'s `#subdirectory=` for a monorepo — a *remote* git dependency
-  needs `Package.swift` at the repo root. Getting this to a real
-  `.package(url: "https://github.com/nebelhaus/holt-swift", from: "0.1.0")`
-  needs either (a) a standalone mirror repo (e.g. `nebelhaus/holt-swift`)
-  that this directory is synced or subtree-split into, or (b) tagging
-  releases straight off this repo and accepting that consumers pin a
-  `branch`/`revision` instead of a semver range pointed at a subdirectory
-  — SwiftPM does not support the latter for the root manifest location.
-  Neither needs a package-manager *account*: unlike npm/PyPI, SwiftPM has
-  no central index to publish to for git-URL consumption. Optional next
-  steps, once there's a tagged release: listing on the (free, no-account)
-  [Swift Package Index](https://swiftpackageindex.com) via a PR to their
-  repo, and/or publishing to a Swift Package **Registry** (SE-0292) if
-  one is wanted — that does need an account on whichever registry you
-  pick (GitHub's supports it under a repo's own auth; there's no single
-  "the" Swift registry the way PyPI/npmjs.org are canonical).
+- **Swift Package Index / registry listing.** Published via git URL
+  (above) is enough for almost every real consumer — most popular Swift
+  packages (e.g. `swift-argument-parser`) ship exactly this way, no
+  registry involved. Listing on the free, no-account
+  [Swift Package Index](https://swiftpackageindex.com) is a cheap future
+  step for discoverability; a Swift Package **Registry** publish
+  (SE-0292) needs an account on whichever registry is picked and isn't
+  planned unless something specific calls for it.
 
 ## Testing
 
 `Tests/HoltTests/fake-holt.sh` stands in for the real binary so tests
 don't need a Go build — it's a fixture, not a spec of holt's behavior,
-kept in sync by hand with `sdk/ts/test/fake-holt.sh` /
-`sdk/python/tests/fake-holt.sh`. Once `holt` builds in CI, add a second
-suite that runs the same assertions against the real binary in a scratch
-repo.
+kept in sync by hand with the equivalent fixtures in `nebelhaus/holt`'s
+`sdk/ts`/`sdk/python`. Once `holt` builds in CI, add a second suite that
+runs the same assertions against the real binary in a scratch repo.
 
 ```
 swift test
